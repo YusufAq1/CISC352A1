@@ -128,4 +128,27 @@ def prop_GAC(csp, newVar=None):
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
     #IMPLEMENT
-    pass
+    cons_queue = []
+    vals = []
+    if newVar is None:
+        cons_queue = csp.get_all_cons()
+    else:
+        cons_queue = csp.get_cons_with_var(newVar)
+
+    while cons_queue:
+        cons = cons_queue.pop(0)
+        for var in cons.get_scope():
+            for domain in var.cur_domain():
+                if not cons.check_var_val(var,domain):
+                    if (var,domain) not in vals:
+                        vals.append((var,domain))
+                        var.prune_value(domain)
+                    if var.cur_domain_size() == 0:
+                        cons_queue.clear()
+                        return False, vals
+                    else:
+                        for q_cons in csp.get_cons_with_var(var):
+                            if q_cons not in cons_queue:
+                                cons_queue.append(q_cons)
+    
+    return True, vals
