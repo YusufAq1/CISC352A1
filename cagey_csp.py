@@ -84,6 +84,8 @@ An example of a 3x3 puzzle would be defined as:
 '''
 
 from cspbase import *
+from itertools import permutations
+from itertools import product
 
 def binary_ne_grid(cagey_grid):
     ##IMPLEMENT
@@ -144,17 +146,19 @@ def nary_ad_grid(cagey_grid):
             csp.add_var(var)
         variables.append(rows)
 
-    
+    tuple_list=[]
+    for tuple in permutations(list(range(1, N + 1)), N):
+        tuple_list.append(tuple)
         
     for i in range(N):
         row_vars = variables[i]
         con = Constraint(f"Row_{i}", row_vars)
-        con.add_satisfying_tuples([tuple(row) for row in permutations(range(1, N + 1), N)])
+        con.add_satisfying_tuples(tuple_list)
         csp.add_constraint(con)
 
         col_vars = [variables[j][i] for j in range(N)]
         con = Constraint(f"Col_{i}", col_vars)
-        con.add_satisfying_tuples([tuple(col) for col in permutations(range(1, N + 1), N)])
+        con.add_satisfying_tuples(tuple_list)
         csp.add_constraint(con)
 
     return csp, variables
