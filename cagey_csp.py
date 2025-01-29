@@ -92,7 +92,37 @@ def binary_ne_grid(cagey_grid):
 
 def nary_ad_grid(cagey_grid):
     ## IMPLEMENT
-    pass
+    N, cages = cagey_grid
+    csp = CSP("N-ary_Grid_Only_Cagey")
+    variables = []
+    
+    domain = []
+    for i in range(1, N+1):
+        domain.append(i)
+
+  
+    for row in range(1, N + 1):
+        rows = []
+        for column in range(1, N + 1):
+            var = Variable("V{}{}".format(row,column), domain)
+            rows.append(var)
+            csp.add_var(var)
+        variables.append(rows)
+
+    
+        
+    for i in range(N):
+        row_vars = variables[i]
+        con = Constraint(f"Row_{i}", row_vars)
+        con.add_satisfying_tuples([tuple(row) for row in permutations(range(1, N + 1), N)])
+        csp.add_constraint(con)
+
+        col_vars = [variables[j][i] for j in range(N)]
+        con = Constraint(f"Col_{i}", col_vars)
+        con.add_satisfying_tuples([tuple(col) for col in permutations(range(1, N + 1), N)])
+        csp.add_constraint(con)
+
+    return csp, variables
 
 def cagey_csp_model(cagey_grid):
     ##IMPLEMENT
