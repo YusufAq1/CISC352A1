@@ -165,4 +165,67 @@ def nary_ad_grid(cagey_grid):
 
 def cagey_csp_model(cagey_grid):
     ##IMPLEMENT
-    pass
+    n, cages = cagey_grid
+    csp, variables = binary_ne_grid(cagey_grid)
+
+    for cage in cages:
+        target, cells, operation = cage
+
+        cage_vars = []
+        for i in cells:
+            cage_vars.append(variables[(i[0]-1) * n + (i[1] - 1)])
+
+        constraint = Constraint(f"Cage_{cells}", cage_vars)
+        satisfying_tuples = []
+        domains = []
+        for i in cage_vars:
+            domains.append(i.domain())
+
+        for values in product(*domains):
+            values = tuple(values)
+            if operation == '+':
+                if sum(values) == target:
+                    satisfying_tuples.append(values)
+            elif operation == '*':
+                if prod(values) == target:
+                    satisfying_tuples.append(values)
+            elif operation == '-':
+                for perm in permutations(values):
+                    sub_total = perm[0]
+                    for i in perm[1:]:
+                        sub_total -= i
+                    if sub_total == target:
+                        satisfying_tuples.append(values)
+                        break
+            elif operation == '/':
+                for perm in permutations(values):
+                    div_total = perm[0]
+                    for i in perm[1:]:
+                        div_total /= i
+                    if div_total == target:
+                        satisfying_tuples.append(values)
+                        break
+            elif operation == '?':
+                if sum(values) == target:
+                    satisfying_tuples.append(values)
+                elif prod(values) == target:
+                    satisfying_tuples.append(values)
+                else:
+                    for perm in permutations(values):
+                        sub_total = perm[0]
+                        for i in perm[1:]:
+                            sub_total -= i
+                        if sub_total == target:
+                            satisfying_tuples.append(values)
+                            break
+                        else:
+                            for perm in permutations(values):
+                                div_total = perm[0]
+                                for i in perm[1:]:
+                                    div_total /= i
+                                if div_total == target:
+                                    satisfying_tuples.append(values)
+                                    break
+        constraint.add_satisfying_tuples(satisfying_tuples)
+        csp.add_constraint(constraint)
+    return csp, variables
