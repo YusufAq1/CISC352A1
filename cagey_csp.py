@@ -1,7 +1,7 @@
 # =============================
-# Student Names:
-# Group ID:
-# Date:
+# Student Names: Al-Aqrabawi, Yusuf; Dipalma, Marcus; Nie, Jasper
+# Group ID: 15
+# Date: 30th Jan 2025
 # =============================
 # CISC 352 - W23
 # cagey_csp.py
