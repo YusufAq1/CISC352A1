@@ -86,6 +86,7 @@ An example of a 3x3 puzzle would be defined as:
 from cspbase import *
 from itertools import permutations
 from itertools import product
+from math import prod
 
 def binary_ne_grid(cagey_grid):
     ##IMPLEMENT
