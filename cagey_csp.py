@@ -87,7 +87,42 @@ from cspbase import *
 
 def binary_ne_grid(cagey_grid):
     ##IMPLEMENT
-    pass
+    n = cagey_grid[0]
+    variables = []
+    csp = CSP('binary_ne_grid')
+    domain = list(range(1,n+1))
+
+    for row in range(1,n+1):
+        for col in range(1,n+1):
+            variable_name = f"cell_{row}_{col}"
+            var = Variable(variable_name, domain)
+            variables.append(var)
+            csp.add_var(var)
+
+    satisfying_tuples = []
+    for cell1, cell2 in product(domain,domain):
+        if cell1 != cell2:
+            satisfying_tuples.append((cell1,cell2))
+
+    for row in range(1,n+1):
+        for col in range(1,n+1):
+            if col != n:
+                for row_constraint in range(col+1, n+1):
+                    cell1 = variables[(row-1) * n + (col - 1)]
+                    cell2 = variables[(row-1) * n + (row_constraint - 1)]
+                    constraint_name = f'Row_{row}_Constraint_{col}_{row_constraint}'
+                    constraint = Constraint(constraint_name, [cell1, cell2])
+                    constraint.add_satisfying_tuples(satisfying_tuples)
+                    csp.add_constraint(constraint)
+            if row != n:
+                for col_constraint in range(row+1, n+1):
+                    cell1 = variables[(row-1) * n + (col - 1)]
+                    cell2 = variables[(col_constraint - 1) * n + (col - 1)]
+                    constraint_name = f'Col_{col}_Constraint_{row}_{col_constraint}'
+                    constraint = Constraint(constraint_name, [cell1, cell2])
+                    constraint.add_satisfying_tuples(satisfying_tuples)
+                    csp.add_constraint(constraint)
+    return csp, variables
 
 
 def nary_ad_grid(cagey_grid):
