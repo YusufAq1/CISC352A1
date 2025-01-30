@@ -89,12 +89,13 @@ from itertools import product
 from math import prod
 
 def binary_ne_grid(cagey_grid):
-    ##IMPLEMENT
+    # define variables
     n = cagey_grid[0]
     variables = []
     csp = CSP('binary_ne_grid')
     domain = list(range(1,n+1))
 
+    # create variable for each cell in grid
     for row in range(1,n+1):
         for col in range(1,n+1):
             variable_name = f"cell_{row}_{col}"
@@ -102,13 +103,17 @@ def binary_ne_grid(cagey_grid):
             variables.append(var)
             csp.add_var(var)
 
+    # create satisfying tuples
+    # the satisfying tuples will be the same every time since the constraints are only between two different cells
     satisfying_tuples = []
     for cell1, cell2 in product(domain,domain):
         if cell1 != cell2:
             satisfying_tuples.append((cell1,cell2))
-
+    
+    # create constraints for each cell (no duplicate constraints)
     for row in range(1,n+1):
         for col in range(1,n+1):
+            # constraints for cells in the same row
             if col != n:
                 for row_constraint in range(col+1, n+1):
                     cell1 = variables[(row-1) * n + (col - 1)]
@@ -117,6 +122,7 @@ def binary_ne_grid(cagey_grid):
                     constraint = Constraint(constraint_name, [cell1, cell2])
                     constraint.add_satisfying_tuples(satisfying_tuples)
                     csp.add_constraint(constraint)
+            # constraints for cells in the same column
             if row != n:
                 for col_constraint in range(row+1, n+1):
                     cell1 = variables[(row-1) * n + (col - 1)]
@@ -165,58 +171,63 @@ def nary_ad_grid(cagey_grid):
     return csp, variables
 
 def cagey_csp_model(cagey_grid):
-    ##IMPLEMENT
+    # define variables and create csp without cage constraints
     n, cages = cagey_grid
     csp, variables = binary_ne_grid(cagey_grid)
     op_vars = []
 
+    # create constraints for cages
     for cage in cages:
         target, cells, operation = cage
 
+        # create scope for cage constraint
         cage_vars = []
         for i in cells:
             cage_vars.append(variables[(i[0]-1) * n + (i[1] - 1)])
+        # operation variable creation
         op_var_name = f"Cage_op({target}:{operation}:" + "[" + ", ".join(f"Var-Cell({x},{y})" for x, y in cells) + "])"
         op_var = Variable(op_var_name, ['+', '-', '*', '/'])
         csp.add_var(op_var)
         op_vars.append(op_var)
 
         constraint = Constraint(f"Cage_{cells}", [op_var] + cage_vars)
+
+        # generate satisfying tuples
         satisfying_tuples = []
         domains = []
         for i in cage_vars:
             domains.append(i.domain())
 
         for values in product(*domains):
-            if operation == '+':
+            if operation == '+': # test if permutations of cells with addition operator reaches target
                 if sum(values) == target:
                     satisfying_tuples.append(tuple(['+'] + list(values)))
-            elif operation == '*':
+            elif operation == '*': # test if permutations of cells with multiply operator reaches target
                 if prod(values) == target:
                     satisfying_tuples.append(tuple(['*'] + list(values)))
-            elif operation == '-':
-                for perm in permutations(values):
+            elif operation == '-': # test if permutations of cells with subtract operator reaches target
+                for perm in permutations(values): # generate all different permutations of the cell values since order matters
                     sub_total = perm[0]
                     for i in perm[1:]:
                         sub_total -= i
                     if sub_total == target:
                         satisfying_tuples.append(tuple(['-'] + list(values)))
                         break
-            elif operation == '/':
-                for perm in permutations(values):
+            elif operation == '/': # test if permutations of cells with divison operator reaches target
+                for perm in permutations(values): # generate all different permutations of the cell values since order matters
                     div_total = perm[0]
                     for i in perm[1:]:
                         div_total /= i
                     if div_total == target:
                         satisfying_tuples.append(tuple(['/'] + list(values)))
                         break
-            elif operation == '?':
-                if sum(values) == target:
+            elif operation == '?': # test all 4 operations for a solution 
+                if sum(values) == target: # test if permutations of cells with addition operator reaches target
                     satisfying_tuples.append(tuple(['+'] + list(values)))
-                elif prod(values) == target:
+                elif prod(values) == target: # test if permutations of cells with multiply operator reaches target
                     satisfying_tuples.append(tuple(['*'] + list(values)))
                 else:
-                    for perm in permutations(values):
+                    for perm in permutations(values): # test if permutations of cells with subtract  operator reaches target
                         sub_total = perm[0]
                         for i in perm[1:]:
                             sub_total -= i
@@ -224,7 +235,7 @@ def cagey_csp_model(cagey_grid):
                             satisfying_tuples.append(tuple(['-'] + list(values)))
                             break
                         else:
-                            for perm in permutations(values):
+                            for perm in permutations(values): # test if permutations of cells with divison operator reaches target
                                 div_total = perm[0]
                                 for i in perm[1:]:
                                     div_total /= i
