@@ -140,11 +140,13 @@ def nary_ad_grid(cagey_grid):
     csp = CSP("N-ary_Grid_Only_Cagey")
     variables = []
     
+    # create array to contain domain
     domain = []
     for i in range(1, N+1):
         domain.append(i)
 
-  
+    
+    # create variables 
     for row in range(1, N + 1):
         rows = []
         for column in range(1, N + 1):
@@ -153,10 +155,12 @@ def nary_ad_grid(cagey_grid):
             csp.add_var(var)
         variables.append(rows)
 
+    # create tuple of all possible permutations
     tuple_list=[]
     for tuple in permutations(list(range(1, N + 1)), N):
         tuple_list.append(tuple)
-        
+    
+    # add constraints
     for i in range(N):
         row_vars = variables[i]
         con = Constraint(f"Row_{i}", row_vars)

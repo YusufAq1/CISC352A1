@@ -104,19 +104,28 @@ def prop_FC(csp, newVar=None):
     #IMPLEMENT
     
     vals = []
+    
+    # get constraints
     if not newVar:
+        
         constraints = csp.get_all_cons()
     else:
         constraints = csp.get_cons_with_var(newVar)
-        
+    
+    # loop through constraints
     for cons in constraints:
+        # check if constraint has only 1 unassigned variable in scope
         if cons.get_n_unasgn() == 1:
             vars = cons.get_unasgn_vars()[0]
+            # loop through the variables domain
             for domain in vars.cur_domain(): 
+                # check if val can be asisgned to variable
                 if not cons.check_var_val(vars,domain):
+                    # add to list then prune
                     if (vars, domain) not in vals:
                         vals.append((vars,domain))
                         vars.prune_value(domain)
+            # condition if there is no solution
             if vars.cur_domain_size() == 0: 
                 return False, vals
     
@@ -130,19 +139,27 @@ def prop_GAC(csp, newVar=None):
     #IMPLEMENT
     cons_queue = []
     vals = []
+    
+    # get constraints
     if newVar is None:
         cons_queue = csp.get_all_cons()
     else:
         cons_queue = csp.get_cons_with_var(newVar)
 
+    # lop while queue still has cons remaining 
     while cons_queue:
+        # pop first element
         cons = cons_queue.pop(0)
+        # loop through scope of constraint
         for var in cons.get_scope():
+            # check domain of each variable in constraints scope
             for domain in var.cur_domain():
+                # if value cannot be applied to variable then prune 
                 if not cons.check_var_val(var,domain):
                     if (var,domain) not in vals:
                         vals.append((var,domain))
                         var.prune_value(domain)
+                    # no solution found
                     if var.cur_domain_size() == 0:
                         cons_queue.clear()
                         return False, vals
